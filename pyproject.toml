@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "sac-mujoco-humanoid"
+version = "0.1.0"
+description = "A Soft Actor-Critic implementation for the MuJoCo Humanoid environment using Gymnasium and PyTorch."
+authors = ["Giansimone Perrino <hello@giansimone.dev>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/giansimone/sac-mujoco-humanoid"
+packages = [
+    {include = "sac_mujoco_humanoid"},
+]
+keywords = [
+    "reinforcement-learning",
+    "deep-reinforcement-learning",
+    "soft-actor-critic",
+    "sac",
+    "mujoco",
+    "humanoid",
+    "gymnasium",
+    "pytorch",
+]
+classifiers = [
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Developers",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
+gymnasium = {extras = ["mujoco"], version = "^1.2.2"}
+torch = "^2.9.1"
+numpy = "^2.3.5"
+pyyaml = "^6.0.3"
+huggingface-hub = "^1.1.2"
+imageio = {extras = ["ffmpeg"], version = "^2.37.2"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
