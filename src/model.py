@@ -28,11 +28,11 @@ class Actor(nn.Module):
 
         self.body = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
+            nn.Tanh(),
         )
 
         self.mean_head = nn.Linear(hidden_dim, action_dim)
@@ -82,17 +82,17 @@ class Critic(nn.Module):
 
         self.q1 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
+            nn.Tanh(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, 1),
         )
 
         self.q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
+            nn.Tanh(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            nn.Tanh(),
             nn.Linear(hidden_dim, 1),
         )
 
