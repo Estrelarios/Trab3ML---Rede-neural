@@ -1,141 +1,98 @@
-[![License](https://img.shields.io/github/license/giansimone/sac-mujoco-humanoid)](https://github.com/giansimone/sac-mujoco-humanoid/blob/main/LICENSE)
+# SAC MuJoCo Humanoid
 
-# Soft Actor-Critic (SAC) for MuJoCo Humanoid Environment
+## Resumo
+Projeto de Deep Reinforcement Learning focado na resolução do ambiente de controle contínuo `Humanoid-v4` (MuJoCo/Gymnasium). O projeto implementa o algoritmo **Soft Actor-Critic (SAC)** modificado com base em achados de estudos empíricos de larga escala e estado-da-arte, como a aplicação de **Spectral Normalization** localizada no Crítico e técnicas de inicialização de pesos (`zero-mean actions`) no Ator para garantir a convergência em arquiteturas profundas e evitar o colapso por perdas de plasticidade matemática.
 
-A PyTorch implementation of the Soft Actor-Critic (SAC) algorithm to train an agent to play with the Humanoid environment from MuJoCo.
+## Estrutura do Projeto
+```text
+Trab3ML---Rede-neural/
+├── pyproject.toml         # Definições do ambiente isolado (Poetry)
+├── poetry.lock            # Árvore de dependências resolvidas
+├── main.py                # Ponto de entrada (Script de execução principal)
+├── humanoide.py           # Script auxiliar de ambiente
+└── sac_mujoco_humanoid/   # Núcleo da implementação RL
+    ├── model.py           # Redes Neurais (Ator e Crítico + Spectral Norm)
+    ├── agent.py           # Lógica do Algoritmo SAC (Perdas, Updates, Otimizadores)
+    ├── train.py           # Loop de iteração (Interação com ambiente vs Otimização)
+    ├── buffer.py          # Memória de Experiência (Replay Buffer)
+    ├── environment.py     # Wrap do Gymnasium
+    └── utils.py           # Utilitários e Logs
+```
 
-## Installation
+## Como configurar e ativar o ambiente
 
-You can clone the repository and install the required dependencies using Poetry or pip. This project requires **Python 3.13**.
+O projeto usa o gerenciador de pacotes **Poetry** (presume-se Python 3.13 já instalado no sistema).
 
-### Using Poetry (Recommended)
+### Windows
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/giansimone/sac-mujoco-humanoid.git
-cd sac-mujoco-humanoid
+1. **Abra o terminal na pasta do projeto** (PowerShell recomendado):
+```powershell
+cd C:\Users\mathe\Documentos\CiênciaDaComputação\Graduacao\4Ano\AM\Trab3\Trab3ML---Rede-neural
+```
 
-# 2. Initialize environment and install dependencies
+2. **Inicialize o ambiente e instale as dependências:**
+Isso forçará o uso do Python 3.13, lerá o arquivo `poetry.lock` e baixará a versão correta do PyTorch, Gymnasium com MuJoCo, etc.
+```powershell
 poetry env use python3.13
 poetry install
+```
 
-# 3. Activate the shell
+3. **Ative o ambiente virtual:**
+Isso vai "entrar" na bolha do projeto onde as bibliotecas foram instaladas. O prefixo do seu PowerShell vai mudar para indicar o ambiente ativo.
+```powershell
+poetry shell
+```
+
+### Linux
+
+1. **Abra o terminal na pasta do repositório clonado:**
+```bash
+cd /caminho/para/Trab3ML---Rede-neural
+```
+
+2. **Inicialize o ambiente e instale as dependências:**
+Isso forçará o uso do Python 3.13 e instalará todas as dependências do projeto.
+```bash
+poetry env use python3.13
+poetry install
+```
+
+3. **Ative o shell do ambiente virtual:**
+```bash
 eval $(poetry env activate)
 ```
 
-### Using Pip
+## Como Usar (Features)
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/giansimone/sac-mujoco-humanoid.git
-cd sac-mujoco-humanoid
+Para executar qualquer funcionalidade do projeto (treino, visualização ou exportação), certifique-se de estar com o ambiente virtual ativado e **navegue para a pasta do código-fonte onde está o `config.yaml`**:
 
-# 2. Create and activate virtual environment
-python3.13 -m venv venv
-source venv/bin/activate
-
-# 3. Install package in editable mode
-pip install -e .
+```powershell
+cd sac_mujoco_humanoid
 ```
 
-## Project Structure
-
-```bash
-sac-mujoco-humanoid/
-├── sac_mujoco_humanoid/
-│   ├── __init__.py
-│   ├── agent.py       # SAC implementation (Actor/Critic)
-│   ├── buffer.py      # Replay Buffer
-│   ├── config.yaml    # Training hyperparameters
-│   ├── environment.py # Gym environment wrappers
-│   ├── enjoy.py       # Evaluation script
-│   ├── export.py      # Hugging Face export script
-│   ├── model.py       # PyTorch Network definitions
-│   ├── train.py       # Main training loop
-│   └── utils.py
-├── .gitignore
-├── LICENSE
-├── README.md
-└── pyproject.toml
-```
-
-## Usage
-
-Ensure you are in the ```sac_mujoco_humanoid``` source directory where ```config.yaml``` is located before running these commands.
-
-```bash
-cd sac-mujoco-humanoid
-```
-
-### Training
-
-Train a SAC agent with the default configuration.
-
-**Note:** The Replay Buffer pre-allocates memory. Ensure your system has at least 8GB of RAM available.
-
-```bash
+### Treinamento
+Para iniciar o treinamento do agente SAC com os hiperparâmetros padrões:
+*(Atenção: O Replay Buffer pré-aloca memória. Garanta ter pelo menos 8GB de RAM livre).*
+```powershell
 python -m train
 ```
 
-### Configuration
+### Configurações
+Edite o arquivo `config.yaml` dentro de `sac_mujoco_humanoid` para alterar tamanho da rede, passos (total_steps), *batch size*, *learning rate* ou semente (seed).
 
-Edit ```config.yaml``` to customise training parameters.
-
-```yaml
-#Environment
-env_name: Humanoid-v5
-
-#Network Architecture
-hidden_dim: 256
-
-#Training
-total_steps: 2_000_000
-buffer_size: 1_000_000
-batch_size: 256
-start_steps: 10_000
-updates_per_step: 1
-
-#SAC Agent
-lr: 0.0003
-gamma: 0.99
-tau: 0.005
-alpha: 0.2
-auto_tune_alpha: True
-
-#Logging
-log_dir: runs/
-
-#System
-seed: 42
+### Visualização (Enjoy)
+Para assistir um agente já treinado executando no ambiente, rode o script `enjoy` apontando para o arquivo salvo do modelo na pasta `runs/`:
+```powershell
+python -m enjoy --artifact runs/sac_Humanoid-v5_.../final_model.pt --num-episodes 5
 ```
 
-### Enjoying a Trained Agent
-
-Watch a trained agent by running the enjoy script. Point the artifact argument to your saved model file.
-
-```bash
-python -m enjoy --artifact runs/sac_Humanoid-v5_YYYY-MM-DD_HHhMMmSSs/final_model.pt --num-episodes 5
-```
-### Exporting to Hugging Face Hub
-
-Share your trained model, config, and a replay video to the Hugging Face Hub.
-
-```bash
+### Exportação (Hugging Face)
+Gera automaticamente um *Model Card*, grava um vídeo do agente no ambiente e sobe os pesos para o Hugging Face Hub:
+```powershell
 python -m export \
-    --username YOUR_HF_USERNAME \
+    --username SEU_USUARIO_HF \
     --repo-name sac-mujoco-humanoid \
-    --artifact-path runs/sac_Humanoid-v5_YYYY-MM-DD_HHhMMmSSs/final_model.pt \
+    --artifact-path runs/sac_Humanoid-v5_.../final_model.pt \
     --movie-fps 30 \
     --n-eval 10
 ```
-
-This will automatically:
-
-- Upload the model weights and config.
-
-- Generate a model card with evaluation metrics (Mean Reward +/- Std).
-
-- Record and upload a video of the agent.
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
