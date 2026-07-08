@@ -6,7 +6,7 @@ from pathlib import Path
 
 from agent import SAC
 from environment import make_env
-from utils import load_config
+from utils import load_config, record_movie
 
 
 def enjoy(artifact_path: Path, n_episodes: int) -> None:
@@ -28,21 +28,26 @@ def enjoy(artifact_path: Path, n_episodes: int) -> None:
     agent.load_model(artifact_path)
 
     for episode in range(1, n_episodes + 1):
+        
         state, _ = env.reset()
         done = False
         episode_reward = 0.
-
+        step = 0
         while not done:
+            step += 1
+            
             action_tensor = agent.select_action(state, deterministic=True)
             action = action_tensor.cpu().numpy().flatten()
 
             next_state, reward, terminated, truncated, _ = env.step(action)
 
             done = terminated or truncated
-
+                
             state = next_state
             episode_reward += float(reward)
-
+            
+        video_path = f"videos/episode_{episode}.mp4"
+        record_movie(env, agent, video_path, 60)
         print(f"MuJoCo Humanoid Episode {episode} | Reward: {episode_reward:.2f}")
 
     env.close()

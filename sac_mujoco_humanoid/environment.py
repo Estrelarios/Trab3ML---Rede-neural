@@ -11,6 +11,7 @@ def make_env(
     render_mode: str | None = None,
 ) -> Tuple[gym.Env, int, int]:
     "Create and wrap environment."
+    
     env = gym.make(env_id, render_mode=render_mode, camera_name="track")
 
     state_dim = env.observation_space.shape[0]
