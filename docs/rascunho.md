@@ -18,7 +18,7 @@ O trabalho é sobre aprendizado profundo
     - Action space
     - Obs space
     - Reward
-
-- Parâmetros
-
+- Parâmetros/otimizações
+    - First Steps : 50k -> ` initializing the policy MLP with smaller weights in the last layer` -> Explicação em 3.2 Networks architecture
+    - 
 # Resultados e Conslusões
