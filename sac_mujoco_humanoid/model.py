@@ -6,6 +6,7 @@ from typing import Tuple
 import torch
 from torch import nn
 from torch.distributions.normal import Normal
+from torch.nn.utils import spectral_norm
 
 LOG_STD_MIN = -20
 LOG_STD_MAX = 2
@@ -82,7 +83,7 @@ class Critic(nn.Module):
         self.q1 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
+            spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
             nn.ReLU(),
             nn.Linear(hidden_dim, 1),
         )
@@ -90,7 +91,7 @@ class Critic(nn.Module):
         self.q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
+            spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
             nn.ReLU(),
             nn.Linear(hidden_dim, 1),
         )
