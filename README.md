@@ -38,9 +38,14 @@ poetry install
 ```
 
 3. **Ative o ambiente virtual:**
-Isso vai "entrar" na bolha do projeto onde as bibliotecas foram instaladas. O prefixo do seu PowerShell vai mudar para indicar o ambiente ativo.
+Primeiro você deve descobrir onde está o comando de ativação, rode:
 ```powershell
-poetry shell
+poetry env info --path
+```
+
+Com isso você deve adquirir algo como: ```C:\Users\SEU_USUARIO\AppData\Local\pypoetry\Cache\virtualenvs\sac-mujoco-humanoid-osAQxkZM-py3.13```powershell. Copie, adicione ```\Scripts\Activate.ps1``` no final da string e rode o script (exemplo com nosso usuário):
+```powershell
+& "C:\Users\TCORP\AppData\Local\pypoetry\Cache\virtualenvs\sac-mujoco-humanoid-osAQxkZM-py3.13\Scripts\Activate.ps1"
 ```
 
 ### Linux
