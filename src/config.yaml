@@ -5,17 +5,17 @@ env_name: Humanoid-v5
 hidden_dim: 256
 
 #Training
-total_steps: 2_000_000
+total_steps: 3_000_000
 buffer_size: 500_000
 batch_size: 1024 # Minibatch size for SGD.
 start_steps: 50_000 # Number of steps for uniform-random action selection, before running real policy. Helps exploration.
 updates_per_step: 1 # ?, nao sei se deveria existir
 
 #SAC Agent
-lr: 0.0003
-gamma: 0.96 # Discount factor. (Always between 0 and 1.)
+lr: 0.0002
+gamma: 0.98 # Discount factor. (Always between 0 and 1.)
 tau: 0.005
-alpha: 0.2 # Fator de entropia
+alpha: 0.3 # Fator de entropia
 auto_tune_alpha: True # Entropy regularization coefficient. (Equivalent to inverse of reward scale in the original SAC paper.)
 
 #Logging
