@@ -10,7 +10,18 @@ O trabalho é sobre aprendizado profundo
 - Explicar onde DL está inserido
 - Explicar SAC - tcc do andre
     - Detalhar mais o actor e critic (MLPs)
-- Explicar porque MLPs do SAC pioram conforme aumentam as camadas ocultas -> não é overfittng, é explosão de gradiente.
+- SAC, MLP e 2 camadas
+    - Explicar porque MLPs do SAC pioram conforme aumentam as camadas ocultas -> ? (porque o anterior leva ao próximo?) -> passos muito grandes -> instabilidade -> explosão de gradiente -> Reta da Constante de Lipschitz quase vertical (ver depois)
+    - Solução: Garantir que uma pequena entrada gere uma pequena saída e não uma grande -> Spectral Normalization.
+- Spectral Normalization
+    - Uma camada linear faz uma operação matemática simples: y = Wx (multiplica entrada x por matriz de pesos W) -> ReLu/Tahn/outro. Ex: 
+    1.  Camada Linear 1  (Entrada -> Oculta 1) +  Tanh
+    2.  Camada Linear 2  (Oculta 1 -> Oculta 2) +  Tanh
+    3.  Camada Linear 3  (Oculta 2 -> Saída)
+    - O fator máximo que a matriz W consegue esticar ou amplificar um vetor x é chamado de Maior Valor Singular (σₘₐₓ).
+    - SN faz apenas uma coisa: a cada passo, calcula o σₘₐₓ da matriz de pesos e divide a matriz por ele. Ou seja, uma normalização 
+    - Já implementado -> :D -> `torch.nn.utils.spectral_norm(nn.Linear(...))`
+
 
 # Metodologia
 
@@ -18,7 +29,7 @@ O trabalho é sobre aprendizado profundo
     - Action space
     - Obs space
     - Reward
-- Parâmetros/otimizações
-    - First Steps : 50k -> ` initializing the policy MLP with smaller weights in the last layer` -> Explicação em 3.2 Networks architecture
-    - 
+
+- Parâmetros
+
 # Resultados e Conslusões

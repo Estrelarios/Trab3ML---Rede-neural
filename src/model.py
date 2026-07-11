@@ -38,6 +38,10 @@ class Actor(nn.Module):
         self.mean_head = nn.Linear(hidden_dim, action_dim)
         self.log_std_head = nn.Linear(hidden_dim, action_dim)
 
+        with torch.no_grad():
+            self.mean_head.weight.data.copy_(self.mean_head.weight.data * 0.01)
+            self.log_std_head.weight.data.copy_(self.log_std_head.weight.data * 0.01)
+
         self.register_buffer("action_scale", action_scale)
         self.register_buffer("action_bias", action_bias)
 
@@ -85,11 +89,15 @@ class Critic(nn.Module):
             nn.Tanh(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
             nn.Tanh(),
+            spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
+            nn.Tanh(),
             nn.Linear(hidden_dim, 1),
         )
 
         self.q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
+            nn.Tanh(),
+            spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
             nn.Tanh(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
             nn.Tanh(),
