@@ -26,7 +26,7 @@ def analyze_spearman(csv_path: str):
     print("\nCalculando Correlação de Spearman com RECOMPENSA_MEDIA...\n")
     
     # Calcula a matriz de correlação usando pandas (método spearman)
-    corr_matrix = df.corr(method='spearman')
+    corr_matrix = df.corr(method='spearman', numeric_only=True)
     
     if 'RECOMPENSA_MEDIA' not in corr_matrix.columns:
         print("Erro: Coluna 'RECOMPENSA_MEDIA' não encontrada ou sem dados numéricos.")
