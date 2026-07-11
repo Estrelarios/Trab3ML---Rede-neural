@@ -4,6 +4,7 @@ Module to create and manage the MuJoCo Humanoid environment.
 from typing import Tuple
 
 import gymnasium as gym
+from gymnasium.wrappers import NormalizeObservation
 
 
 def make_env(
@@ -13,6 +14,7 @@ def make_env(
     "Create and wrap environment."
     
     env = gym.make(env_id, render_mode=render_mode, camera_name="track")
+    env = NormalizeObservation(env)
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
