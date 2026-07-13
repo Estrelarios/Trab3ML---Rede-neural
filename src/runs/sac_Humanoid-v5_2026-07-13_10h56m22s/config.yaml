@@ -1,0 +1,14 @@
+env_name: Humanoid-v5
+hidden_dim: 256
+total_steps: 1000000
+buffer_size: 200000
+batch_size: 1024
+start_steps: 50000
+updates_per_step: 1
+lr: 0.0001
+gamma: 0.99
+tau: 0.005
+alpha: 0.1
+auto_tune_alpha: false
+log_dir: runs/
+seed: 42
