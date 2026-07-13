@@ -38,9 +38,14 @@ poetry install
 ```
 
 3. **Ative o ambiente virtual:**
-Isso vai "entrar" na bolha do projeto onde as bibliotecas foram instaladas. O prefixo do seu PowerShell vai mudar para indicar o ambiente ativo.
+Primeiro você deve descobrir onde está o comando de ativação, rode:
 ```powershell
-poetry shell
+poetry env info --path
+```
+
+Com isso você deve adquirir algo como: ```C:\Users\SEU_USUARIO\AppData\Local\pypoetry\Cache\virtualenvs\sac-mujoco-humanoid-osAQxkZM-py3.13```powershell. Copie, adicione ```\Scripts\Activate.ps1``` no final da string e rode o script (exemplo com nosso usuário):
+```powershell
+& "C:\Users\TCORP\AppData\Local\pypoetry\Cache\virtualenvs\sac-mujoco-humanoid-osAQxkZM-py3.13\Scripts\Activate.ps1"
 ```
 
 ### Linux
@@ -79,6 +84,25 @@ python -m train
 
 ### Configurações
 Edite o arquivo `config.yaml` dentro de `sac_mujoco_humanoid` para alterar tamanho da rede, passos (total_steps), *batch size*, *learning rate* ou semente (seed).
+
+### Comparação de Modelos (Compare)
+Para avaliar todos os treinamentos salvos na pasta `runs/` e gerar uma tabela ranqueada (exportando automaticamente um arquivo `compare_results.csv` com todos os hiperparâmetros):
+```powershell
+python -m compare
+```
+*(Para ler de outra pasta, use: `python -m compare --runs-dir ../runs_boas`)*
+
+### Análise de Correlação
+Após gerar o `compare_results.csv`, você pode calcular a Correlação de Spearman para identificar matematicamente quais hiperparâmetros impactaram mais os resultados. *(Requer a biblioteca `pandas` instalada no ambiente)*:
+```powershell
+python analyze_correlations.py --csv compare_results.csv
+```
+
+### Curva de Aprendizado (Gráfico)
+Durante o treinamento, um histórico é salvo de forma segura em `training_history.csv` na pasta de cada run. Para gerar e salvar um gráfico plotando a evolução da recompensa ao longo dos steps. *(Requer as bibliotecas `matplotlib` e `pandas`)*:
+```powershell
+python plot_training.py --run-dir runs/sac_Humanoid-v5_SUA_PASTA
+```
 
 ### Visualização (Enjoy)
 Para assistir um agente já treinado executando no ambiente, rode o script `enjoy` apontando para o arquivo salvo do modelo na pasta `runs/`:

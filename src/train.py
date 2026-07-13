@@ -25,6 +25,13 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
     run_dir.mkdir(parents=True, exist_ok=True)
     save_config(config.copy(), run_dir / "config.yaml")
 
+    history_file = run_dir / "training_history.csv"
+    try:
+        with open(history_file, "w", encoding="utf-8") as f:
+            f.write("Step,Reward\n")
+    except Exception as e:
+        print(f"Aviso: Falha ao criar arquivo de histórico CSV: {e}")
+
     env_name = config["env_name"]
 
     env, state_dim, action_dim = make_env(
@@ -81,6 +88,13 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
 
         if done:
             print(f"Step: {step}, Reward: {episode_reward:.2f}, Alpha: {agent.alpha:.4f}")
+            try:
+                with open(history_file, "a", encoding="utf-8") as f:
+                    f.write(f"{step},{episode_reward:.2f}\n")
+            except Exception:
+                # Falha silenciosa/Aviso leve para garantir que I/O errors não matem o loop de treino
+                print(f"Aviso: Não foi possível escrever no histórico CSV no step {step}.")
+                
             state, _ = env.reset()
             episode_reward = 0
 
