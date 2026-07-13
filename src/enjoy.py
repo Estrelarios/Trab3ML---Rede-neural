@@ -46,8 +46,8 @@ def enjoy(artifact_path: Path, n_episodes: int) -> None:
             state = next_state
             episode_reward += float(reward)
             
-        video_path = f"videos/episode_{episode}.mp4"
-        record_movie(env, agent, video_path, 60)
+        # video_path = f"videos/episode_{episode}.mp4"
+        # record_movie(env, agent, video_path, 60)
         print(f"MuJoCo Humanoid Episode {episode} | Reward: {episode_reward:.2f}")
 
     env.close()
