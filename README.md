@@ -92,11 +92,6 @@ python -m compare
 ```
 *(Para ler de outra pasta, use: `python -m compare --runs-dir ../runs_boas`)*
 
-### Análise de Correlação
-Após gerar o `compare_results.csv`, você pode calcular a Correlação de Spearman para identificar matematicamente quais hiperparâmetros impactaram mais os resultados. *(Requer a biblioteca `pandas` instalada no ambiente)*:
-```powershell
-python analyze_correlations.py --csv compare_results.csv
-```
 
 ### Curva de Aprendizado (Gráfico)
 Durante o treinamento, um histórico é salvo de forma segura em `training_history.csv` na pasta de cada run. Para gerar e salvar um gráfico plotando a evolução da recompensa ao longo dos steps. *(Requer as bibliotecas `matplotlib` e `pandas`)*:
