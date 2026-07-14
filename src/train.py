@@ -33,10 +33,13 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
         print(f"Aviso: Falha ao criar arquivo de histórico CSV: {e}")
 
     env_name = config["env_name"]
+    activation = config.get("activation", "tanh")
+    normalize_obs = config.get("normalize_obs", False)
 
     env, state_dim, action_dim = make_env(
         env_name,
         render_mode=None,
+        normalize_obs=normalize_obs,
     )
 
     print(f"| State space: {state_dim}, Action space: {action_dim}")
@@ -54,6 +57,7 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
         auto_tune_alpha=config["auto_tune_alpha"],
         action_space=env.action_space,
         device=device,
+        activation=activation,
     )
 
     print(f"Total timesteps: {config['total_steps']}")

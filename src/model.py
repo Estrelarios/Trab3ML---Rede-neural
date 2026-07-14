@@ -17,22 +17,31 @@ class Actor(nn.Module):
     """Actor network for Soft Actor-Critic (SAC)."""
     def __init__(
         self,
-        state_dim: int, # oq eh esse?
-        action_dim: int, # não precisa mexer, o MuJuCo já define por padrao pelo env
-        hidden_dim: int, # psor falou pra deixar em 88
+        state_dim: int,
+        action_dim: int,
+        hidden_dim: int,
         action_scale: torch.Tensor = torch.tensor(1.0),
         action_bias: torch.Tensor = torch.tensor(0.0),
+        activation: str = "tanh",
     ):
-        """Initialize the Actor network."""
+        """Initialize the Actor network.
+        
+        Args:
+            activation: Activation function to use in the body network.
+                        Use 'relu' for runs trained before 2026-07-08,
+                        and 'tanh' for runs trained from 2026-07-08 onwards.
+        """
         super().__init__()
+
+        act_fn = nn.Tanh if activation.lower() == "tanh" else nn.ReLU
 
         self.body = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
-            nn.Tanh(),
+            act_fn(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
+            act_fn(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
+            act_fn(),
         )
 
         self.mean_head = nn.Linear(hidden_dim, action_dim)
