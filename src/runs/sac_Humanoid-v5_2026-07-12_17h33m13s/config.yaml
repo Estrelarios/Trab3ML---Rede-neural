@@ -1,0 +1,16 @@
+env_name: Humanoid-v5
+hidden_dim: 256
+total_steps: 3000000
+buffer_size: 500000
+batch_size: 1024
+start_steps: 50000
+updates_per_step: 1
+lr: 0.0002
+gamma: 0.98
+tau: 0.005
+alpha: 0.3
+auto_tune_alpha: true
+log_dir: runs/
+seed: 42
+
+# ReLU, spectral e redução dos pesos de entrada
