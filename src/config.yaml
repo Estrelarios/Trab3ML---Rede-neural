@@ -3,6 +3,10 @@ env_name: Humanoid-v5
 
 #Network Architecture
 hidden_dim: 256
+# Função de ativação usada no corpo do Actor: 'tanh' ou 'relu'
+activation: tanh
+# Aplica NormalizeObservation wrapper no ambiente
+normalize_obs: false
 
 #Training
 total_steps: 1_000_000

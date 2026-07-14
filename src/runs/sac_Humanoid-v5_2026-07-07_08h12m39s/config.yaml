@@ -15,3 +15,6 @@ seed: 42
 
 # Usa ReLu
 # Não usa Spectral Normalization
+# --- Arquitetura usada neste treino ---
+activation: relu
+normalize_obs: false

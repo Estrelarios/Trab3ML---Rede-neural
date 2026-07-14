@@ -13,4 +13,7 @@ auto_tune_alpha: true
 log_dir: runs/
 seed: 42
 
-# ReLU, spectral e redução dos pesos de entrada
+# --- Arquitetura usada neste treino ---
+# Nota: ReLU no Actor, SN no Critic (herdado do model.py atual), W/100 na inicialização
+activation: relu
+normalize_obs: false

@@ -10,11 +10,13 @@ from gymnasium.wrappers import NormalizeObservation
 def make_env(
     env_id: str,
     render_mode: str | None = None,
+    normalize_obs: bool = False,
 ) -> Tuple[gym.Env, int, int]:
     "Create and wrap environment."
     
     env = gym.make(env_id, render_mode=render_mode, camera_name="track")
-    # env = NormalizeObservation(env)
+    if normalize_obs:
+        env = NormalizeObservation(env)
 
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]

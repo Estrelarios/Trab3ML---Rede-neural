@@ -31,12 +31,15 @@ def compare_runs(runs_dir: Path, n_eval: int, output_csv: str = "compare_results
                 env_name = config["env_name"]
                 hidden_dim = config["hidden_dim"]
                 seed = config.get("seed", 42)
+                # Lê os campos de arquitetura registrados no config de cada run
+                activation = config.get("activation", "tanh")
+                normalize_obs = config.get("normalize_obs", False)
+
+                # Instancia o ambiente com o mesmo wrapper usado no treino
+                env, state_dim, action_dim = make_env(env_name, render_mode=None, normalize_obs=normalize_obs)
                 
-                # Instancia o ambiente sem renderização gráfica (mais rápido)
-                env, state_dim, action_dim = make_env(env_name, render_mode=None)
-                
-                # Instancia o Agente e carrega os pesos
-                agent = SAC(state_dim, action_dim, hidden_dim, action_space=env.action_space)
+                # Instancia o Agente com a mesma arquitetura do treino e carrega os pesos
+                agent = SAC(state_dim, action_dim, hidden_dim, action_space=env.action_space, activation=activation)
                 agent.load_model(model_path)
                 
                 # Avalia usando a mesma função oficial de exportação
