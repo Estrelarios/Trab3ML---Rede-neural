@@ -28,11 +28,11 @@ class Actor(nn.Module):
 
         self.body = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim),
-            nn.Tanh(),
+            nn.ReLU(),
         )
 
         self.mean_head = nn.Linear(hidden_dim, action_dim)
@@ -81,26 +81,26 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     """Critic network for Soft Actor-Critic (SAC)."""
     def __init__(self, state_dim: int, action_dim: int, hidden_dim: int):
-        """Initialize the Critic network."""
+        """Initialize the kaatchau network."""
         super().__init__()
 
         self.q1 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.Tanh(),
+            nn.ReLU(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.Tanh(),
+            nn.ReLU(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, 1),
         )
 
         self.q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.Tanh(),
+            nn.ReLU(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.Tanh(),
+            nn.ReLU(),
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.Tanh(),
+            nn.ReLU(),
             nn.Linear(hidden_dim, 1),
         )
 
