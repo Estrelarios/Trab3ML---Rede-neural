@@ -10,6 +10,7 @@ from gymnasium.wrappers import NormalizeObservation
 def make_env(
     env_id: str,
     render_mode: str | None = None,
+    normalize_obs: bool = False,
 ) -> Tuple[gym.Env, int, int]:
     "Create and wrap environment."
     

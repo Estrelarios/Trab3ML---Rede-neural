@@ -29,6 +29,7 @@ class SAC:
         auto_tune_alpha: bool = True,
         action_space: Space | None = None,
         device: torch.device = torch.device("cpu"),
+        activation: str = "tanh",
     ):
         """Initialize the SAC agent."""
         self.batch_size = batch_size
@@ -53,7 +54,7 @@ class SAC:
             )
 
         self.actor = Actor(
-            state_dim, action_dim, hidden_dim, action_scale, bias_scale
+            state_dim, action_dim, hidden_dim, action_scale, bias_scale, activation=activation
         ).to(device)
         self.actor_optim = optim.Adam(self.actor.parameters(), lr=lr)
 

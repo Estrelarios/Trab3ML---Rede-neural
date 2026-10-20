@@ -12,3 +12,7 @@ alpha: 0.3
 auto_tune_alpha: true
 log_dir: runs/
 seed: 42
+
+# --- Arquitetura usada neste treino ---
+activation: tanh
+normalize_obs: false
