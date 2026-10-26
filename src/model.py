@@ -6,7 +6,7 @@ from typing import Tuple
 import torch
 from torch import nn
 from torch.distributions.normal import Normal
-from torch.nn.utils import spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm
 
 LOG_STD_MIN = -20
 LOG_STD_MAX = 2
@@ -33,7 +33,12 @@ class Actor(nn.Module):
         """
         super().__init__()
 
-        act_fn = nn.Tanh if activation.lower() == "tanh" else nn.ReLU
+        activation = activation.lower()
+        if activation not in ("tanh", "relu"):
+            raise ValueError(
+                f"Ativação inválida: '{activation}'. Use 'tanh' ou 'relu'."
+            )
+        act_fn = nn.Tanh if activation == "tanh" else nn.ReLU
 
         self.body = nn.Sequential(
             nn.Linear(state_dim, hidden_dim),
@@ -89,27 +94,35 @@ class Actor(nn.Module):
 
 class Critic(nn.Module):
     """Critic network for Soft Actor-Critic (SAC)."""
-    def __init__(self, state_dim: int, action_dim: int, hidden_dim: int):
-        """Initialize the kaatchau network."""
+    def __init__(self, state_dim: int, action_dim: int, hidden_dim: int, activation: str = "tanh"):
+        """Initialize the Critic network."""
         super().__init__()
-
+        
+        
+        activation = activation.lower()
+        if activation not in ("tanh", "relu"):
+            raise ValueError(
+                f"Ativação inválida: '{activation}'. Use 'tanh' ou 'relu'."
+            )
+        act_fn = nn.Tanh() if activation == "tanh" else nn.ReLU()
+        
         self.q1 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
+            act_fn,
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            act_fn,
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            act_fn,
             nn.Linear(hidden_dim, 1),
         )
 
         self.q2 = nn.Sequential(
             nn.Linear(state_dim + action_dim, hidden_dim),
-            nn.ReLU(),
+            act_fn,
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            act_fn,
             spectral_norm(nn.Linear(hidden_dim, hidden_dim)),
-            nn.ReLU(),
+            act_fn,
             nn.Linear(hidden_dim, 1),
         )
 

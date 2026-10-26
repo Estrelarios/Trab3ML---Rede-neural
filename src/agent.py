@@ -24,7 +24,7 @@ class SAC:
         batch_size: int = 256,
         lr: float = 3e-4,
         gamma: float = 0.99,
-        tau: float = 0.055,
+        tau: float = 0.005,
         alpha: float = 0.2,
         auto_tune_alpha: bool = True,
         action_space: Space | None = None,
@@ -35,6 +35,7 @@ class SAC:
         self.batch_size = batch_size
         self.gamma = gamma
         self.tau = tau
+        self.activation = activation.lower()
 
         self.device = device
 
@@ -54,7 +55,7 @@ class SAC:
             )
 
         self.actor = Actor(
-            state_dim, action_dim, hidden_dim, action_scale, bias_scale, activation=activation
+            state_dim, action_dim, hidden_dim, action_scale, bias_scale, activation=self.activation
         ).to(device)
         self.actor_optim = optim.Adam(self.actor.parameters(), lr=lr)
 
@@ -70,18 +71,22 @@ class SAC:
             self.target_entropy = -torch.prod(
                 torch.tensor(action_space.shape, device=device)
             ).item()
-            self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
+            # alpha inicial = valor do config (antes: log_alpha=0 -> alpha=1.0)
+            self.log_alpha = torch.full(
+                (1,), float(np.log(alpha)), requires_grad=True, device=device
+            )
             self.log_alpha_optim = optim.Adam([self.log_alpha], lr=lr)
 
     def select_action(self, state: np.ndarray, deterministic: bool = False) -> np.ndarray:
         """Select an action given the current state."""
         tensor_state = torch.tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
-        if deterministic:
-            _, _, action = self.actor.sample(tensor_state)
-        else:
-            action, _, _ = self.actor.sample(tensor_state)
+        with torch.no_grad():
+            if deterministic:
+                _, _, action = self.actor.sample(tensor_state)
+            else:
+                action, _, _ = self.actor.sample(tensor_state)
 
-        return action.detach()
+        return action
 
     def learn(self):
         """Update the agent's networks based on a batch of experiences."""
@@ -132,11 +137,60 @@ class SAC:
             filepath.parent.mkdir(parents=True, exist_ok=True)
             checkpoint = {
                 "actor_state_dict": self.actor.state_dict(),
+                "activation": self.activation,
             }
             torch.save(checkpoint, filepath)
             print(f"Model saved successfully to {filepath}")
         except IOError as e:
             print(f"I/O error({e.errno}) while saving model at {filepath}: {e.strerror}")
+
+    def save_checkpoint(self, filepath: Path) -> None:
+        """Save the full training state (actor, critics, optimizers, alpha).
+
+        O replay buffer não é salvo (seria grande); ao retomar, ele recomeça vazio.
+        """
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        checkpoint = {
+            "activation": self.activation,
+            "actor_state_dict": self.actor.state_dict(),
+            "critic_state_dict": self.critic.state_dict(),
+            "critic_target_state_dict": self.critic_target.state_dict(),
+            "actor_optim_state_dict": self.actor_optim.state_dict(),
+            "critic_optim_state_dict": self.critic_optim.state_dict(),
+            "alpha": self.alpha,
+        }
+        if self.auto_tune:
+            checkpoint["log_alpha"] = self.log_alpha.detach().cpu()
+            checkpoint["log_alpha_optim_state_dict"] = self.log_alpha_optim.state_dict()
+        torch.save(checkpoint, filepath)
+        print(f"Checkpoint saved successfully to {filepath}")
+
+    def load_checkpoint(self, filepath: Path) -> None:
+        """Restore the full training state saved by `save_checkpoint`."""
+        checkpoint = torch.load(filepath, map_location=self.device)
+        self._check_activation(checkpoint)
+
+        self.actor.load_state_dict(checkpoint["actor_state_dict"])
+        self.critic.load_state_dict(checkpoint["critic_state_dict"])
+        self.critic_target.load_state_dict(checkpoint["critic_target_state_dict"])
+        self.actor_optim.load_state_dict(checkpoint["actor_optim_state_dict"])
+        self.critic_optim.load_state_dict(checkpoint["critic_optim_state_dict"])
+        self.alpha = checkpoint.get("alpha", self.alpha)
+
+        if self.auto_tune and "log_alpha" in checkpoint:
+            with torch.no_grad():
+                self.log_alpha.copy_(checkpoint["log_alpha"].to(self.device))
+            self.log_alpha_optim.load_state_dict(checkpoint["log_alpha_optim_state_dict"])
+        print(f"Checkpoint loaded successfully from {filepath}")
+
+    def _check_activation(self, checkpoint: dict) -> None:
+        """Fail loudly if the checkpoint was trained with another activation."""
+        saved = checkpoint.get("activation")
+        if saved is not None and saved.lower() != self.activation:
+            raise ValueError(
+                f"Ativação do checkpoint ('{saved}') difere da do agente "
+                f"('{self.activation}'). Instancie o SAC com activation='{saved}'."
+            )
 
     def load_model(self, filepath: Path) -> None:
         """Load the model from the specified filepath."""
@@ -147,6 +201,7 @@ class SAC:
             checkpoint = torch.load(
                 filepath, map_location=self.device
             )
+            self._check_activation(checkpoint)
             actor_state = checkpoint.get("actor_state_dict")
 
             self.actor.load_state_dict(actor_state, strict=False)

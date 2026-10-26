@@ -16,14 +16,23 @@ def enjoy(artifact_path: Path, n_episodes: int) -> None:
 
     env_name = config["env_name"]
     hidden_dim = config["hidden_dim"]
+    # Runs anteriores a 2026-07-08 não registram a chave e usavam ReLU.
+    activation = config.get("activation", "relu")
+    normalize_obs = config.get("normalize_obs", False)
 
     env, state_dim, action_dim = make_env(
         env_name,
         render_mode="human",
+        normalize_obs=normalize_obs,
+        obs_stats_path=artifact_path.parent / "obs_stats.npz" if normalize_obs else None,
     )
 
     agent = SAC(
-        state_dim, action_dim, hidden_dim, action_space=env.action_space
+        state_dim,
+        action_dim,
+        hidden_dim,
+        action_space=env.action_space,
+        activation=activation,
     )
     agent.load_model(artifact_path)
 

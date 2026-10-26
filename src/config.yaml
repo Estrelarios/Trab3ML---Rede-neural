@@ -11,17 +11,17 @@ normalize_obs: false
 #Training
 total_steps: 1_500_000
 buffer_size: 200_000
-batch_size: 512 # Minibatch size for SGD.
+batch_size: 256 # Minibatch size for SGD.
 start_steps: 80_000 # Number of steps for uniform-random action selection, before running real policy. Helps exploration.
 updates_per_step: 1 # ?, nao sei se deveria existir
 
 #SAC Agent
-lr: 0.0001
+lr: 0.0003
 gamma: 0.99 # Discount factor. (Always between 0 and 1.)
 tau: 0.005
 alpha: 0.2 # Fator de entropia
-auto_tune_alpha: True # Entropy regularization coefficient. (Equivalent to inverse of reward scale in the original SAC paper.)
-katchau: True
+auto_tune_alpha: false # Entropy regularization coefficient. (Equivalent to inverse of reward scale in the original SAC paper.)
+
 
 #Logging
 log_dir: runs/

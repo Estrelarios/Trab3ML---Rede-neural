@@ -7,13 +7,17 @@ from datetime import datetime
 import torch
 
 from agent import SAC 
-from environment import make_env
+from environment import make_env, save_obs_stats
 from utils import set_seed, load_config, save_config
 
 
 def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
     """Train the SAC agent in the MuJoCo Humanoid environment."""
     config = load_config(config_filename)
+    # Registra os valores efetivos no config.yaml da run (evita ambiguidade
+    # entre 'chave ausente' e 'chave com valor padrão' na avaliação).
+    config.setdefault("activation", "tanh")
+    config.setdefault("normalize_obs", False)
     device = torch.device(device_id)
 
     set_seed(config["seed"])
@@ -41,6 +45,8 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
         render_mode=None,
         normalize_obs=normalize_obs,
     )
+
+    env.action_space.seed(config["seed"])  # fase aleatória reprodutível
 
     print(f"| State space: {state_dim}, Action space: {action_dim}")
 
@@ -88,7 +94,8 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
         episode_reward += float(reward)
 
         if step >= config["start_steps"]:
-            agent.learn()
+            for _ in range(config.get("updates_per_step", 1)):
+                agent.learn()
 
         if done:
             print(f"Step: {step}, Reward: {episode_reward:.2f}, Alpha: {agent.alpha:.4f}")
@@ -102,7 +109,10 @@ def train(config_filename: Path = Path("config.yaml"), device_id: str = "cpu"):
             state, _ = env.reset()
             episode_reward = 0
 
-    agent.save_model(run_dir / "final_model.pt")
+    agent.save_model(run_dir / "final_model.pt")          # só o ator (inferência)
+    agent.save_checkpoint(run_dir / "checkpoint.pt")      # estado completo (retomar treino)
+    if normalize_obs:
+        save_obs_stats(env, run_dir / "obs_stats.npz")
 
     env.close()
 

@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 import json
+import shutil
 import tempfile
 
 import torch
@@ -45,7 +46,8 @@ def evaluate_agent(
 
         scores.append(episode_reward)
 
-    env.close()
+    # O env NÃO é fechado aqui: quem chama é responsável por fechá-lo
+    # (push_to_hub ainda o usa para gravar o vídeo).
 
     avg_score = np.mean(scores, dtype=np.float64)
     std_score = np.std(scores, dtype=np.float64)
@@ -60,7 +62,7 @@ def push_to_hub(
     movie_fps: int,
     n_eval: int,
     ):
-    """Push a trained PPO agent to the Hugging Face Hub."""
+    """Push a trained SAC agent to the Hugging Face Hub."""
     api = HfApi()
 
     repo_id = f"{username}/{repo_name}"
@@ -73,14 +75,24 @@ def push_to_hub(
     env_id = config["env_name"]
     hidden_dim = config["hidden_dim"]
     seed = config["seed"]
+    # Runs anteriores a 2026-07-08 não registram a chave e usavam ReLU.
+    activation = config.get("activation", "relu")
+    normalize_obs = config.get("normalize_obs", False)
+    obs_stats_path = artifact_path.parent / "obs_stats.npz"
 
     env, state_dim, action_dim = make_env(
         env_id,
         render_mode="rgb_array",
+        normalize_obs=normalize_obs,
+        obs_stats_path=obs_stats_path if normalize_obs else None,
     )
 
     agent = SAC(
-        state_dim, action_dim, hidden_dim, action_space=env.action_space
+        state_dim,
+        action_dim,
+        hidden_dim,
+        action_space=env.action_space,
+        activation=activation,
     )
     agent.load_model(artifact_path)
 
@@ -88,6 +100,8 @@ def push_to_hub(
         local_directory = Path(tmpdirname)
 
         torch.save(agent.actor.state_dict(), local_directory / "model.pt")
+        if normalize_obs:
+            shutil.copy(obs_stats_path, local_directory / "obs_stats.npz")
 
         with open(local_directory / "config.json", "w", encoding="utf-8") as f:
             json.dump(config, f)
@@ -162,15 +176,25 @@ with open("config.json", "r") as f:
 
 env_name = config["env_name"]
 hidden_dim = config["hidden_dim"]
+activation = config.get("activation", "relu")
+normalize_obs = config.get("normalize_obs", False)
 
-# Create environment. Get action and space dimensions
-env, state_size, action_size = make_env(
+# Create environment. Get state and action dimensions
+env, state_dim, action_dim = make_env(
     env_name,
     render_mode="human",
+    normalize_obs=normalize_obs,
+    obs_stats_path="obs_stats.npz" if normalize_obs else None,
 )
 
 # Instantiate the agent and load the trained policy network
-agent = SAC(state_dim, action_dim, hidden_dim)
+agent = SAC(
+    state_dim,
+    action_dim,
+    hidden_dim,
+    action_space=env.action_space,
+    activation=activation,
+)
 
 agent.actor.load_state_dict(torch.load("model.pt"))
 
@@ -198,6 +222,7 @@ env.close()
         print("Recording movie...")
         movie_path = local_directory / "replay.mp4"
         record_movie(env, agent, movie_path, movie_fps)
+        env.close()
 
         print("Uploading to Hugging Face Hub...")
         api.upload_folder(
